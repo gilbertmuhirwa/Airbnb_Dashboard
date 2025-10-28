@@ -8,13 +8,13 @@ from sklearn.metrics import mean_absolute_error, r2_score
 
 # CONFIG
 # IMPORTANT: When deploying, this file must be in the same folder as app.py.
-DATA_PATH = r"C:\Users\educa\Desktop\nisr project\educonnect final project\Airbnb_site_hotel new.csv"
-st.set_page_config(page_title="🏨 Airbnb Hotel - Upgraded Dashboard", layout="wide")
-st.title("🏨 Airbnb Hotel Analysis — Upgraded Dashboard")
 
-# ---------------------------------------------------
+DATA_PATH = r"C:\Users\USER\Downloads\Edconnect assignment final\educonnect_final_project\data\Airbnb_site_hotel new.csv"
+st.set_page_config(page_title="Airbnb Hotel - Dashboard App", layout="wide")
+st.title("Airbnb Hotel Analysis — Dashboard App")
+
 # DATA LOADING & CLEANING
-# ---------------------------------------------------
+
 @st.cache_data
 def load_data(path):
     # Added error handling for data loading
@@ -54,14 +54,14 @@ def safe_column(df, name, alt_names=[]):
             return n
     return None
 
-# ---------------------------------------------------
+
 # LOAD DATA
-# ---------------------------------------------------
+
 df = load_data(DATA_PATH)
 
-# ---------------------------------------------------
+
 # COLUMN MAPPING (SIDEBAR)
-# ---------------------------------------------------
+
 st.sidebar.header("Map Dataset Columns")
 
 suggestions = {
@@ -77,6 +77,7 @@ suggestions = {
 cols = ["None"] + [str(c) for c in df.columns]
 
 # Sidebar select boxes
+
 def select_with_suggestion(label, suggest):
     idx = cols.index(suggest) if suggest in cols else 0
     return st.sidebar.selectbox(label, cols, index=idx)
@@ -90,12 +91,13 @@ HOST_RESP_COL = select_with_suggestion("Host Response Rate column", suggestions[
 HOST_ACCEPT_COL = select_with_suggestion("Host Acceptance Rate column", suggestions["Host Acceptance"])
 
 # Convert “None” to None
+
 def none_or_value(val): return None if val == "None" else val
 CITY_COL, AREA_COL, PRICE_COL, INCOME_COL, REVIEWERS_COL, HOST_RESP_COL, HOST_ACCEPT_COL = map(none_or_value, [
     CITY_COL, AREA_COL, PRICE_COL, INCOME_COL, REVIEWERS_COL, HOST_RESP_COL, HOST_ACCEPT_COL
 ])
 
-st.sidebar.markdown("### 🔎 Current mappings")
+st.sidebar.markdown("### Current mappings")
 st.sidebar.write({
     "City": CITY_COL,
     "Area": AREA_COL,
@@ -106,9 +108,8 @@ st.sidebar.write({
     "Host Acceptance": HOST_ACCEPT_COL,
 })
 
-# ---------------------------------------------------
 # CLEANING DATA
-# ---------------------------------------------------
+
 d = df.copy()
 if PRICE_COL: d[PRICE_COL] = d[PRICE_COL].apply(clean_price)
 if INCOME_COL: d[INCOME_COL] = d[INCOME_COL].apply(clean_price)
@@ -118,12 +119,13 @@ if HOST_ACCEPT_COL: d[HOST_ACCEPT_COL] = d[HOST_ACCEPT_COL].apply(clean_percent)
 if PRICE_COL and REVIEWERS_COL:
     d["price_per_reviewer"] = d[PRICE_COL] / (d[REVIEWERS_COL].replace({0: np.nan}))
 
-# ---------------------------------------------------
+
 # FILTERS (SIDEBAR)
-# ---------------------------------------------------
-st.sidebar.header("🔍 Filters")
+
+st.sidebar.header("Filters")
 
 # Area filter appears first
+
 if AREA_COL:
     areas = sorted(d[AREA_COL].dropna().unique().tolist())
     area_options = ["All"] + areas
@@ -144,6 +146,7 @@ price_range = get_range(PRICE_COL)
 sales_range = get_range(INCOME_COL)
 
 # Apply filters
+
 df_filtered = d.copy()
 if AREA_COL and selected_areas:
     df_filtered = df_filtered[df_filtered[AREA_COL].isin(selected_areas)]
@@ -152,17 +155,16 @@ if PRICE_COL:
 if INCOME_COL:
     df_filtered = df_filtered[df_filtered[INCOME_COL].between(*sales_range)]
 
-# ---------------------------------------------------
+
 # MAIN TABS
-# ---------------------------------------------------
+
 tabs = st.tabs([
     "Overview", "City Analysis", "Customer Insights",
     "Host Performance", "Prediction", "Raw Data"
 ])
 
-# ---------------------------------------------------
 # 1. OVERVIEW
-# ---------------------------------------------------
+
 with tabs[0]:
     st.header("Overview")
     col1, col2, col3, col4 = st.columns(4)
@@ -204,9 +206,8 @@ with tabs[0]:
             use_container_width=True
         )
 
-# ---------------------------------------------------
 # 2. CITY ANALYSIS
-# ---------------------------------------------------
+
 with tabs[1]:
     st.header("City Analysis")
     if CITY_COL:
@@ -244,9 +245,8 @@ with tabs[1]:
             st.warning("Please select at least one numeric column (Price, Income, or Reviewers) for City Analysis.")
 
 
-# ---------------------------------------------------
 # 3. CUSTOMER INSIGHTS
-# ---------------------------------------------------
+
 with tabs[2]:
     st.header("Customer Insights")
     if PRICE_COL and REVIEWERS_COL:
@@ -267,9 +267,8 @@ with tabs[2]:
         else:
             st.info("Not enough data to calculate correlation after dropping NaNs.")
 
-# ---------------------------------------------------
 # 4. HOST PERFORMANCE
-# ---------------------------------------------------
+
 with tabs[3]:
     st.header("Host Performance")
     if HOST_RESP_COL:
@@ -291,9 +290,8 @@ with tabs[3]:
             use_container_width=True
         )
 
-# ---------------------------------------------------
 # 5. PREDICTION
-# ---------------------------------------------------
+
 with tabs[4]:
     st.header("Predict Sales (Income)")
     if INCOME_COL:
@@ -335,9 +333,8 @@ with tabs[4]:
     else:
         st.warning("No income column found for prediction.")
 
-# ---------------------------------------------------
 # 6. RAW DATA
-# ---------------------------------------------------
+
 with tabs[5]:
     st.header("Raw Data (Filtered)")
     st.write(f"Filtered rows: {len(df_filtered)}")
